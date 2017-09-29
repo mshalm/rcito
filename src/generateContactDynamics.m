@@ -32,12 +32,23 @@ C = jacobian(jacobian(T,v).',q) - (1/2) * jacobian(H*v,q).';
 % generate normal contact jacobian
 J = jacobian(phi, q);
 
+% generate inertial dynamics gradients
+dCv_dq = jacobian(C*v,q);
+dCv_dv = jacobian(C*v,v);
+dCv  = [dCv_dq dCv_dv];
+
+dG = jacobian(G,q);
+
+% write .m files
 writeMatrixFunction(H, q, 'q', ['H_', suffix], 0);
 writeMatrixFunction(G, q, 'q', ['G_', suffix], 0);
 writeMatrixFunction(C, x, 'x', ['C_', suffix], 0);
-writeMatrixFunction(B, q, 'q', ['B_', suffix], 0);
+writeMatrixFunction(B, [], '', ['B_', suffix], 0);
 writeMatrixFunction(J, q, 'q', ['J_', suffix], 0);
 writeMatrixFunction(phi, q, 'q' , ['phi_', suffix], 0);
+
+write_matrix_func(dG, q, 'q', ['dG_', suffix], 0);
+write_matrix_func(dCv, x, 'x', ['dCv_', suffic], 0);
 
 
 end

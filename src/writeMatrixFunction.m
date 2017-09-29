@@ -20,7 +20,11 @@ num_vars = numel(variables);
 fid = fopen(['./', fcn_name, '.m'], 'w+');
 
 % Write header.
-fprintf(fid, 'function [out]= %s(%s)\n', fcn_name, varname);
+if (num_vars > 0)
+    fprintf(fid, 'function [out]= %s(%s)\n', fcn_name, varname);
+else
+    fprintf(fid, 'function [out]= %s\n', fcn_name, varname);
+end
 
 % Some header comments.
 fprintf(fid, '%%%%');
@@ -45,8 +49,7 @@ end
 fprintf(fid, '\n');
 
 
-fprintf(fid, '%s\n', ['out = zeros(', num2str(m), ',', num2str(n), ',' ...
-    num2str(o), ');']);
+fprintf(fid, '%s\n', ['out = zeros(', num2str(m), ',', num2str(n), ');']);
 
 
 fprintf(fid, '%% Populate output. \n');
