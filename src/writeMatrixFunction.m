@@ -23,7 +23,7 @@ fid = fopen(['./', fcn_name, '.m'], 'w+');
 if (num_vars > 0)
     fprintf(fid, 'function [out]= %s(%s)\n', fcn_name, varname);
 else
-    fprintf(fid, 'function [out]= %s\n', fcn_name, varname);
+    fprintf(fid, 'function [out]= %s\n', fcn_name);
 end
 
 % Some header comments.

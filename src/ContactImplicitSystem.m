@@ -13,6 +13,8 @@ classdef ContactImplicitSystem < DiscreteDynamicalSystem
         dCv
         nq
         nv
+        suffix
+        cleanup
     end
     
     methods
@@ -24,24 +26,29 @@ classdef ContactImplicitSystem < DiscreteDynamicalSystem
             obj.nq = numel(q);
             obj.nv = numel(v);
             
-            generateContactDynamics(q, v, T, V, B, phi, suffix);
+            if nargin < 2
+                suffix = '';
+            end
+            suffix = generateContactDynamics(q, v, T, V, B, phi, suffix);
+            obj.suffix = suffix;
             
+            obj.H = eval(['@H',suffix]);
+            obj.G = eval(['@G',suffix]);
+            obj.C = eval(['@C',suffix]);
+            obj.B = eval(['B',suffix]);
+            obj.J = eval(['@J',suffix]);
+            obj.phi = eval(['@phi',suffix]);
+            obj.dG = eval(['@dG',suffix]);
+            obj.dCv = eval(['@dCv',suffix]);
             
-            obj.H = eval(['@H_',suffix]);
-            obj.G = eval(['@G_',suffix]);
-            obj.C = eval(['@C_',suffix]);
-            obj.B = eval(['@B_',suffix]);
-            obj.J = eval(['@J_',suffix]);
-            obj.phi = eval(['@phi_',suffix]);
-            obj.dG = eval(['@dG_',suffix]);
-            obj.dCv = eval(['@dCv_',suffix]);
+            obj.cleanup = onCleanup(@() obj.delete());
         end
         
         function [xp] = dynamics(obj, xm, u, h)
             t = 0;
             q_cur = xm(1:obj.nq);
             v_cur = xm((obj.nq + 1):end);
-            while (tf < h)
+            while (t < h)
                 h_try = h - t;
                 phi_cur = obj.phi(q_cur);
                 active_cur = obj.activeContacts(q_cur);
@@ -68,20 +75,20 @@ classdef ContactImplicitSystem < DiscreteDynamicalSystem
                     
                     % get state post impact
                     [q_cur, v_cur] = obj.step(q_cur, v_cur, u, 0);
-                    tf = tf + h_min;
+                    t = t + h_min;
                 else
-                   tf = tf + h_try;
+                   t = t + h_try;
                    q_cur = q_try;
                    v_cur = v_try;
                    break;
                 end
             end
-            xp = x_cur;
+            xp = [q_cur; v_cur];
         end
         
         function vect = activeContacts(obj, q)
             e = 1e-4;
-            vect = logical(obj.phi(q) > e);
+            vect = logical(obj.phi(q) < e);
         end
         
         function [qp, vp] = step(obj, qm, vm, u, h)
@@ -89,32 +96,47 @@ classdef ContactImplicitSystem < DiscreteDynamicalSystem
             Hm = obj.H(qm);
             Gm = obj.G(qm);
             Cm = obj.C(xm);
-            Bm = obj.B(qm);
+            Bm = obj.B;
             Jm = obj.J(qm);
+            active = obj.activeContacts(qm);
+            
             dGm = obj.dG(qm);
             dCvm = obj.dCv(xm);
             dCvm_dq = dCvm(:,1:obj.nq);
             dCvm_dv = dCvm(:,(obj.nq + 1):end);
             
             % limit contacts to those that are active
-            Jm = Jm(obj.activeContacts(q), :);
+            Jm = Jm(active, :);
             
             k = Bm*u - Cm*vm - Gm;
             dk_dq = -dCvm_dq - dGm;
             dk_dv = -dCvm_dv;
             
             H_hat = Hm - h^2 * dk_dq - h * dk_dv;
-            k_hat = k - dk_dv * v;
+            k_hat = k - dk_dv * vm;
             
-            r = Hm * v + h * k_hat;
-            
-            
-            M = Jm * (H_hat \ Jm');
-            l = Jm * (H_hat \ r);
-            [~, lambda, retcode] = LCPSolve(M,l);
-            
-            vp = H_hat \ (r + Jm' * lambda);
+            r = Hm * vm + h * k_hat;
+            if (nnz(active) > 0)
+                M = Jm * (H_hat \ Jm');
+                l = Jm * (H_hat \ r);
+                [~, lambda, retcode] = LCPSolve(M,l);
+
+                vp = H_hat \ (r + Jm' * lambda);
+            else
+                vp = H_hat \ r;
+            end
             qp = qm + h*vp;
+        end
+        
+        function delete(obj)
+            delete(['H',obj.suffix]);
+            delete(['G',obj.suffix]);
+            delete(['C',obj.suffix]);
+            delete(['B',obj.suffix]);
+            delete(['J',obj.suffix]);
+            delete(['phi',obj.suffix]);
+            delete(['dG',obj.suffix]);
+            delete(['dCv',obj.suffix]);
         end
     end
     
