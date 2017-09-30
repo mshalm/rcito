@@ -11,10 +11,4 @@ sys1 = sys1.addVisualizer(@(x) ball_slope_visual(x, alpha, r));
 
 [t, x] = sys1.simulate(0.01, N, x0, true, 4);
 
-%qx = x(1,:);
-%qy = x(2,:);
-%figure(1);
-%plot(qx, qy);
-%axis equal
-
 end

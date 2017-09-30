@@ -1,5 +1,5 @@
 function [q, v, u, T, V, B, phi] = ball_slope(alpha, r, m)
-% dynamics of a ball of radius r  and mass mthat can interact with a ground
+% dynamics of a ball of radius r and mass m that can interact with a ground
 % plane intersecting the origin with slope alpha without friction.
 % zero friction means that the ball will not rotate, so the angle of the
 % ball will not be modeled

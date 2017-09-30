@@ -1,6 +1,4 @@
 function ball_slope_visual(x, alpha, r)
-%BALL_SLOPE_VISUAL Summary of this function goes here
-%   Detailed explanation goes here
     xmin = -10;
     xmax = 10;
     ymin = -10;
