@@ -129,14 +129,14 @@ classdef ContactImplicitSystem < DiscreteDynamicalSystem
         end
         
         function delete(obj)
-            delete(['H',obj.suffix]);
-            delete(['G',obj.suffix]);
-            delete(['C',obj.suffix]);
-            delete(['B',obj.suffix]);
-            delete(['J',obj.suffix]);
-            delete(['phi',obj.suffix]);
-            delete(['dG',obj.suffix]);
-            delete(['dCv',obj.suffix]);
+            delete(['H', obj.suffix, '.m']);
+            delete(['G', obj.suffix, '.m']);
+            delete(['C', obj.suffix, '.m']);
+            delete(['B', obj.suffix, '.m']);
+            delete(['J', obj.suffix, '.m']);
+            delete(['phi', obj.suffix, '.m']);
+            delete(['dG', obj.suffix, '.m']);
+            delete(['dCv', obj.suffix, '.m']);
         end
     end
     
